@@ -1,0 +1,868 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0e14">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon-96x96.png" type="image/png" sizes="96x96">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
+<link rel="manifest" href="/site.webmanifest">
+<style>:root{color-scheme:light dark}html,body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Cómo funciona Cuturl</title>
+<style>
+  /* Layout: índice numerado fijo a la izquierda (estilo Word) + contenido.
+     Sección 3 integra esquema + archivos con 3 visibilidades y vista a 2 columnas (árbol | código). */
+  /* Identidad danypro.net — "Dark Premium" (oscuro fijo, acento turquesa). Fuente Inter. */
+  :root {
+    --bg: #0a0e14; --surface: #121824; --surface-2: #1a2130; --fg: #f3f1ea; --muted: #99a2b0;
+    --border: #222c3c; --accent: #5ec8d6; --accent-ink: #052028; --accent-soft: #14242e;
+    --ok: #5ec8d6; --ok-soft: rgba(94,200,214,.08);
+    --warn: #e0a05c; --warn-soft: #2a2010;
+    --code-bg: #090c12; --code-fg: #e7ebf5; --code-accent: #6fd0dd; --code-str: #9ae6a4; --code-com: #6f7891;
+    --font-head: "Inter", ui-sans-serif, system-ui, sans-serif;
+    --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body { background:
+      radial-gradient(1100px 680px at 88% -10%, rgba(94,200,214,.08), transparent 60%),
+      var(--bg);
+    color: var(--fg); font-family: var(--font-body); line-height: 1.55; }
+  code, pre { font-family: var(--font-mono); }
+  h1,h2,h3 { font-family: var(--font-head); line-height: 1.15; text-wrap: balance; margin: 0; font-weight: 700; }
+  h1 { font-size: clamp(1.7rem, 4.5vw, 2.3rem); letter-spacing: -0.03em; font-weight: 800; }
+  h2 { font-size: clamp(1.25rem, 3.2vw, 1.55rem); letter-spacing: -0.01em; }
+  h3 { font-size: 1.0rem; } p { margin: 0; }
+
+  /* ---- Barra de marca + footer (consistentes con la landing de Cuturl) ---- */
+  .site { border-bottom: 1px solid var(--border); }
+  .site-in { max-width: 1160px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 14px; }
+  .sbrand { display: inline-flex; align-items: center; gap: 11px; text-decoration: none; }
+  .sbrand img { height: 28px; width: auto; display: block; }
+  .sbrand .sbn { font-weight: 700; letter-spacing: .14em; text-transform: uppercase; font-size: .85rem; color: var(--accent); }
+  .sback { text-decoration: none; color: var(--muted); font-size: .85rem; font-weight: 600;
+    border: 1px solid var(--border); border-radius: 999px; padding: 7px 15px; transition: border-color .15s, color .15s; }
+  .sback:hover { color: var(--fg); border-color: var(--accent); }
+  footer.site { border-bottom: 0; border-top: 1px solid var(--border); margin-top: 8px; }
+  footer.site .site-in { padding-block: 24px 42px; color: var(--muted); font-size: .86rem; flex-wrap: wrap; }
+  footer.site .fl { display: inline-flex; align-items: center; gap: 10px; }
+  footer.site .fl img { height: 22px; width: auto; display: block; }
+  footer.site a { color: var(--accent); text-decoration: none; font-weight: 600; }
+  footer.site a:hover { text-decoration: underline; }
+  footer.site b { color: var(--fg); }
+  footer.site .fr { display: flex; gap: 16px; }
+  footer.site .fr a { color: var(--muted); font-weight: 500; }
+  footer.site .fr a:hover { color: var(--fg); }
+  .doc-kicker { color: var(--accent); font-weight: 600; font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; margin: 0 0 10px; }
+
+  /* ---- Layout general: índice + contenido ---- */
+  .layout { max-width: 1160px; margin: 0 auto; display: grid; grid-template-columns: 216px minmax(0,1fr); gap: 34px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 64px; }
+
+  /* ---- Índice estilo Word ---- */
+  .toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 20px); align-self: start; }
+  .toc .toc-ttl { font-family: var(--font-head); font-size: .72rem; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--muted); margin: 0 0 12px 10px; }
+  .toc ol { list-style: none; margin: 0; padding: 0; counter-reset: s; }
+  .toc .sub { list-style: none; margin: 4px 0 2px; padding: 0; counter-reset: ss; }
+  .toc a { display: flex; gap: 9px; align-items: baseline; text-decoration: none; color: var(--fg);
+    padding: 6px 10px; border-radius: 8px; font-size: .9rem; border-left: 2px solid transparent; }
+  .toc a:hover { background: var(--surface-2); }
+  .toc a.active { background: var(--accent-soft); color: var(--accent); border-left-color: var(--accent); font-weight: 600; }
+  .toc .lvl1 { counter-increment: s; }
+  .toc .lvl1 .n::before { content: counter(s); }
+  .toc .lvl2 { counter-increment: ss; }
+  .toc .lvl2 a { font-size: .84rem; color: var(--muted); padding-left: 20px; }
+  .toc .lvl2 a:hover { color: var(--fg); }
+  .toc .lvl2 a.active { color: var(--accent); }
+  .toc .lvl2 .n::before { content: counter(s) "." counter(ss); }
+  .toc .n { font-family: var(--font-mono); font-size: .82rem; color: var(--accent); flex: 0 0 auto; min-width: 22px; }
+
+  /* ---- Encabezado ---- */
+  .brand { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-head); font-weight: 700;
+    font-size: .8rem; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+  .brand .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); }
+  .lede { color: var(--muted); font-size: 1.04rem; max-width: 62ch; margin-top: 10px; }
+
+  section { margin-top: 46px; scroll-margin-top: 80px; }
+  .eyebrow { font-family: var(--font-head); font-size: .72rem; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--accent); font-weight: 600; display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+  .eyebrow .big { font-size: 1rem; }
+  .sub { color: var(--muted); margin-top: 8px; max-width: 66ch; }
+
+  /* ---- Panorama ---- */
+  .pipe { display: flex; flex-wrap: wrap; align-items: stretch; gap: 10px; margin-top: 20px; }
+  .node { flex: 1 1 130px; min-width: 0; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 13px; display: flex; flex-direction: column; gap: 4px; }
+  .node .k { font-family: var(--font-mono); font-size: .7rem; color: var(--accent); }
+  .node .t { font-weight: 600; font-size: .92rem; } .node .d { color: var(--muted); font-size: .8rem; }
+  .arrow { align-self: center; color: var(--muted); font-size: 1.3rem; flex: 0 0 auto; }
+  @media (max-width: 560px) { .arrow { transform: rotate(90deg); } }
+
+  /* ---- Toggle ---- */
+  .segmented { display: inline-flex; background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 999px; padding: 4px; gap: 4px; flex-wrap: wrap; }
+  .segmented button { font: inherit; font-weight: 600; font-size: .86rem; border: 0; cursor: pointer;
+    background: transparent; color: var(--muted); padding: 7px 15px; border-radius: 999px; }
+  .segmented button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+
+  /* ---- Sección 2: pasos sin código ---- */
+  .stepslist { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; counter-reset: st; }
+  .stepcard { counter-increment: st; display: flex; gap: 14px; align-items: flex-start;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+  .stepcard .n { flex: 0 0 auto; width: 28px; height: 28px; border-radius: 50%; background: var(--accent-soft);
+    color: var(--accent); font-family: var(--font-mono); font-weight: 600; font-size: .85rem; display: grid; place-items: center; }
+  .stepcard .n::before { content: counter(st); }
+  .stepcard h3 { font-family: var(--font-body); font-weight: 700; font-size: .98rem; }
+  .stepcard p { color: var(--muted); font-size: .9rem; margin-top: 3px; }
+  .stepcard b { color: var(--accent); font-weight: 600; } .stepcard code { background: var(--surface-2); border-radius: 5px; padding: 1px 5px; font-size: .82em; }
+
+  /* ---- Sección 3: esquema + archivos, 2 columnas ---- */
+  .split { display: grid; grid-template-columns: minmax(0, 320px) minmax(0, 1fr); gap: 18px; margin-top: 20px; align-items: start; }
+  @media (max-width: 720px) { .split { grid-template-columns: 1fr; } }
+  .filelist { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 8px; }
+  .grp { font-family: var(--font-mono); font-size: .76rem; font-weight: 600; color: var(--fg); padding: 12px 10px 4px;
+    display: flex; align-items: baseline; gap: 7px; }
+  .grp .gtri { color: var(--muted); font-size: .7rem; } .grp .gnote { color: var(--muted); font-weight: 400; font-size: .72rem; }
+  .tree-branch { margin: 2px 0 2px 9px; padding-left: 12px; border-left: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 2px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: 0 0 auto; }
+  .dot.ours { background: var(--accent); } .dot.edit { background: var(--warn); } .dot.core { background: var(--muted); }
+  .frow { display: flex; flex-direction: column; gap: 3px; align-items: flex-start; width: 100%;
+    text-align: left; font: inherit; color: inherit; background: transparent; border: 1px solid transparent;
+    border-radius: 9px; padding: 9px 11px; }
+  .frow.clk { cursor: pointer; } .frow.clk:hover { background: var(--surface-2); border-color: var(--border); }
+  .frow.sel { background: var(--accent-soft); border-color: var(--accent); }
+  .frow .r1 { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .frow .fname { font-family: var(--font-mono); font-weight: 600; font-size: .84rem; color: var(--accent); overflow-wrap: anywhere; }
+  .frow.core .fname { color: var(--muted); font-weight: 500; }
+  .frow .fdir { font-family: var(--font-mono); font-size: .72rem; color: var(--muted); overflow-wrap: anywhere; }
+  .frow .note { font-size: .74rem; color: var(--muted); }
+  /* Filas "de Laravel": nota en segunda línea, chica, gris y a la derecha (sin caja). */
+  .frow.core { padding: 6px 11px; cursor: not-allowed; }
+  .grp, .treeinfo { cursor: default; }
+  .frow.core .cnote { align-self: flex-end; text-align: right; font-size: .72rem; color: var(--muted); max-width: 65%; }
+  .frow .fstep { font-family: var(--font-mono); font-size: .7rem; color: var(--accent); }
+  .treeinfo { font-size: .76rem; color: var(--muted); line-height: 1.5; padding: 10px 11px 2px;
+    margin-top: 8px; border-top: 1px solid var(--border); }
+  .badge { font-family: var(--font-head); font-size: .62rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+    padding: 2px 6px; border-radius: 999px; flex: 0 0 auto; }
+  .b-ours { color: var(--accent); background: var(--accent-soft); }
+  .b-edit { color: var(--warn); background: var(--warn-soft); }
+  .b-core { color: var(--muted); background: var(--surface-2); }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 14px; font-size: .8rem; color: var(--muted); align-items: center; }
+
+  .codepane { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+    position: sticky; top: calc(env(safe-area-inset-top, 0px) + 20px); }
+  @media (max-width: 720px) { .codepane { position: static; } }
+  .cp-head { padding: 15px 18px 12px; border-bottom: 1px solid var(--border); }
+  .chip { display: inline-block; font-family: var(--font-mono); font-size: .72rem; color: var(--accent);
+    background: var(--accent-soft); border-radius: 999px; padding: 3px 10px; margin-bottom: 8px; word-break: break-all; }
+  .cp-head h3 { font-family: var(--font-body); font-weight: 700; }
+  .keylist { margin: 0; padding: 12px 18px 4px 34px; }
+  .keylist li { margin: 0 0 7px 0; font-size: .88rem; } .keylist li::marker { color: var(--accent); }
+  .keylist code { background: var(--surface-2); border-radius: 5px; padding: 1px 5px; font-size: .82em; }
+  .keylist b { color: var(--accent); font-weight: 600; }
+  pre.code { margin: 6px 14px 16px; background: var(--code-bg); color: var(--code-fg); border-radius: 10px;
+    padding: 14px 16px; overflow-x: auto; font-size: .79rem; line-height: 1.7; }
+  pre.code .cm { color: var(--code-com); font-style: italic; } pre.code .st { color: var(--code-str); } pre.code .kw { color: var(--code-accent); }
+
+  /* ---- Sección 4 ---- */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-top: 20px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px; }
+  .card .cn { font-family: var(--font-mono); color: var(--accent); font-weight: 600; font-size: .78rem; }
+  .card h3 { margin: 6px 0 8px; font-family: var(--font-body); } .card .now { font-size: .86rem; }
+  .card .later { font-size: .86rem; color: var(--muted); margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border); }
+  .card .later b { color: var(--warn); }
+  .note { margin-top: 16px; background: var(--ok-soft); border: 1px solid color-mix(in srgb, var(--ok) 40%, transparent);
+    border-radius: 12px; padding: 14px 16px; font-size: .88rem; } .note b { color: var(--ok); }
+  code.inl { background: var(--surface-2); border-radius: 5px; padding: 1px 5px; font-size: .85em; }
+
+  .foot { margin-top: 52px; color: var(--muted); font-size: .84rem; border-top: 1px solid var(--border); padding-top: 18px; }
+
+  /* ---- Responsive: índice arriba en pantallas chicas ---- */
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; gap: 10px; }
+    .toc { position: sticky; top: 0; z-index: 20; background: var(--bg); margin: 0 -16px; padding: 10px 16px;
+      border-bottom: 1px solid var(--border); overflow-x: auto; }
+    .toc .toc-ttl { display: none; }
+    .toc ol { display: flex; gap: 6px; }
+    .toc .lvl1 { flex: 0 0 auto; } .toc .sub { display: none; }
+    .toc a { white-space: nowrap; border-left: 0; border: 1px solid var(--border); }
+    .toc a.active { border-color: var(--accent); }
+  }
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<header class="site">
+  <div class="site-in">
+    <a class="sbrand" href="/"><img src="logo.png" alt=""><span class="sbn">Cuturl</span></a>
+    <a class="sback" href="/">← Volver a la app</a>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- ÍNDICE estilo Word -->
+  <nav class="toc" aria-label="Índice">
+    <p class="toc-ttl">Contenido</p>
+    <ol>
+      <li class="lvl1"><a href="#s1"><span class="n"></span> Panorama</a></li>
+      <li class="lvl1"><a href="#s2"><span class="n"></span> Los dos recorridos</a></li>
+      <li class="lvl1">
+        <a href="#s3"><span class="n"></span> Esquema y archivos</a>
+        <ol class="sub">
+          <li class="lvl2"><a href="#s3" onclick="selectView('general')"><span class="n"></span> Árbol general</a></li>
+          <li class="lvl2"><a href="#s3" onclick="selectView('crear')"><span class="n"></span> Flujo: crear</a></li>
+          <li class="lvl2"><a href="#s3" onclick="selectView('consultar')"><span class="n"></span> Flujo: consultar</a></li>
+        </ol>
+      </li>
+      <li class="lvl1"><a href="#s4"><span class="n"></span> La idea de fondo</a></li>
+    </ol>
+  </nav>
+
+  <!-- CONTENIDO -->
+  <main class="content">
+    <header>
+      <p class="doc-kicker">Documentación de Cuturl</p>
+      <h1>Cómo funciona Cuturl, pieza por pieza</h1>
+      <p class="lede">De lo general a lo específico: el ciclo de una petición, los dos recorridos, y el código real de cada archivo con comentarios línea a línea. Para entender Laravel, no solo usarlo.</p>
+    </header>
+
+    <!-- 1 -->
+    <section id="s1">
+      <span class="eyebrow"><span class="big">1</span> Panorama</span>
+      <h2>¿Qué es, en una frase?</h2>
+      <p class="sub">Cuturl recibe una URL larga, guarda una fila con un <b>código corto</b>, y cuando alguien visita ese código lo <b>redirige</b> al destino. Toda app Laravel es el mismo ciclo: llega una petición, pasa por capas, sale una respuesta.</p>
+      <div class="pipe" aria-label="Ciclo de una petición">
+        <div class="node"><span class="k">1</span><span class="t">Navegador</span><span class="d">Pide una URL o envía un formulario.</span></div>
+        <span class="arrow">→</span>
+        <div class="node"><span class="k">2 · routes/web.php</span><span class="t">Rutas</span><span class="d">Decide qué método atiende esa URL.</span></div>
+        <span class="arrow">→</span>
+        <div class="node"><span class="k">3 · Controller</span><span class="t">Lógica</span><span class="d">Orquesta: valida, genera, guarda.</span></div>
+        <span class="arrow">→</span>
+        <div class="node"><span class="k">4 · Modelo / SQLite</span><span class="t">Datos</span><span class="d">Lee o escribe la tabla <code>links</code>.</span></div>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section id="s2">
+      <span class="eyebrow"><span class="big">2</span> Los dos recorridos</span>
+      <h2>Qué pasa, paso a paso</h2>
+      <p class="sub">Los dos únicos caminos de la app, en palabras. Sin código aquí: para ver el código de cada archivo, usa la sección 3.</p>
+      <div style="margin-top:16px">
+        <div class="segmented" role="group" aria-label="Elegir recorrido">
+          <button id="tab-crear" aria-pressed="true" onclick="selectFlow('crear')">Crear un link</button>
+          <button id="tab-resolver" aria-pressed="false" onclick="selectFlow('resolver')">Resolver un link</button>
+        </div>
+      </div>
+      <div class="stepslist" id="stepslist"></div>
+    </section>
+
+    <!-- 3 -->
+    <section id="s3">
+      <span class="eyebrow"><span class="big">3</span> Esquema y archivos</span>
+      <h2>El código, por dentro</h2>
+      <p class="sub">Elige una <b>visibilidad</b> y haz clic en un archivo: a la derecha verás su código real, comentado línea a línea.</p>
+      <div style="margin-top:16px">
+        <div class="segmented" role="group" aria-label="Elegir visibilidad">
+          <button id="v-general" aria-pressed="true" onclick="selectView('general')">Árbol general</button>
+          <button id="v-crear" aria-pressed="false" onclick="selectView('crear')">Flujo: crear</button>
+          <button id="v-consultar" aria-pressed="false" onclick="selectView('consultar')">Flujo: consultar</button>
+        </div>
+      </div>
+      <div class="split">
+        <div class="filelist" id="filelist" role="tablist" aria-label="Archivos"></div>
+        <div class="codepane">
+          <div class="cp-head"><span class="chip" id="cp-path"></span><h3 id="cp-role"></h3></div>
+          <ul class="keylist" id="cp-key"></ul>
+          <pre class="code"><code id="cp-code"></code></pre>
+        </div>
+      </div>
+      <div class="legend">
+        <span><span class="dot ours"></span> nuestro</span>
+        <span><span class="dot edit"></span> editado</span>
+        <span><span class="dot core"></span> de Laravel</span>
+      </div>
+    </section>
+
+    <!-- 4 -->
+    <section id="s4">
+      <span class="eyebrow"><span class="big">4</span> La idea de fondo</span>
+      <h2>Los 3 "puntos de cambio"</h2>
+      <p class="sub">La decisión más importante: aislar las 3 cosas que van a cambiar, para que añadir features sea <b>sumar</b>, no reescribir.</p>
+      <div class="cards">
+        <div class="card"><span class="cn">#1 · Generar el código</span><h3>CodeGenerator (interfaz)</h3>
+          <p class="now">Hoy: <code class="inl">RandomCodeGenerator</code>, código aleatorio de 6 caracteres.</p>
+          <p class="later">Mañana: cambiar <b>una línea</b> del binding para usar <b>Sqids</b> → códigos no enumerables.</p></div>
+        <div class="card"><span class="cn">#2 · Validar el destino</span><h3>StoreLinkRequest</h3>
+          <p class="now">Hoy: URL http/https bien formada, máx. 2048 caracteres.</p>
+          <p class="later">Mañana: regla <b>SafeUrl</b> (bloquear IPs internas → anti-SSRF/phishing).</p></div>
+        <div class="card"><span class="cn">#3 · Resolver el link</span><h3>LinkController@resolve</h3>
+          <p class="now">Hoy: busca el código y redirige con 301.</p>
+          <p class="later">Mañana: <b>expiración</b>, <b>contraseña</b>, <b>interstitial</b> y <b>analítica</b>.</p></div>
+      </div>
+      <div class="note"><b>Por qué el esquema mínimo.</b> La tabla <code class="inl">links</code> empieza con solo <code class="inl">code</code> y <code class="inl">destination</code>. Columnas como <code class="inl">expires_at</code> entran con su propia <b>migración</b> cuando se construya esa feature. Así se aprenden migraciones de verdad.</div>
+    </section>
+
+    <div class="foot">
+      <p>Estado: <b style="color:var(--fg)">Iteración 1 completa</b> — crear + redirigir, en <code>http://url-shortener.test</code>. Siguiente: Iteración 2 (Sqids, tocando solo el binding del punto&nbsp;#1).</p>
+    </div>
+  </main>
+</div>
+
+<footer class="site">
+  <div class="site-in">
+    <span class="fl"><img src="logo.png" alt="">Documentación de <b>Cuturl</b> · Hecho por <a href="https://danypro.net" target="_blank" rel="noopener">Daniel Bonilla · danypro.net</a></span>
+    <nav class="fr">
+      <a href="/">La app</a>
+      <a href="https://github.com/DanyDanny7" target="_blank" rel="noopener">Código</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+  function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  // Resaltador en UNA sola pasada: así nunca re-escanea el markup que inserta
+  // (antes la palabra clave "class" chocaba con class="..." de los <span>).
+  const KEYWORDS = new Set(['public','private','protected','function','return','while','do','for',
+    'class','interface','implements','extends','readonly','array','string','bool','int','void',
+    'namespace','use','new','const','static']);
+  function highlight(code){
+    const re = /(\{\{--[\s\S]*?--\}\}|\/\/[^\n]*)|('[^']*')|(@\w+)|([A-Za-z_]\w*)/g;
+    return esc(code).replace(re, (m, com, str, dir, word) => {
+      if (com) return '<span class="cm">' + com + '</span>';
+      if (str) return '<span class="st">' + str + '</span>';
+      if (dir) return '<span class="kw">' + dir + '</span>';
+      if (word && KEYWORDS.has(word)) return '<span class="kw">' + word + '</span>';
+      return m;
+    });
+  }
+
+  /* ================= SECCIÓN 2 — recorridos (solo texto) ================= */
+  const FLOWS = {
+    crear: [
+      { t:"El usuario envía el formulario", d:"La vista muestra un formulario. Al dar «Acortar», el navegador hace un <b>POST</b> a <code>/links</code> con la URL escrita. Viaja un token <code>@csrf</code> de seguridad." },
+      { t:"La ruta decide quién atiende", d:"<code>routes/web.php</code> ve «POST a /links» y lo conecta con el método <code>store()</code> del <b>LinkController</b>." },
+      { t:"Se valida antes de entrar", d:"El <b>StoreLinkRequest</b> revisa la URL. Si es inválida, Laravel vuelve al formulario con el error y el controller <b>nunca</b> se ejecuta." },
+      { t:"Se pide un código corto", d:"El controller pide un código a la <b>interfaz</b> <code>CodeGenerator</code>. No sabe (ni le importa) qué implementación se lo da." },
+      { t:"El código se genera sin repetirse", d:"El <b>RandomCodeGenerator</b> arma 6 caracteres aleatorios y reintenta si ese código ya existía. Así se garantiza que sea único." },
+      { t:"Se guarda en SQLite", d:"<code>Link::create()</code> inserta la fila (code + destination) en la tabla. El <code>$fillable</code> del modelo bloquea campos no permitidos." },
+      { t:"Se muestra el link corto", d:"El controller redirige al formulario con el enlace guardado en la <b>sesión</b>. La vista lo lee y lo muestra listo para copiar." }
+    ],
+    resolver: [
+      { t:"Alguien visita el código", d:"Se abre <code>http://url-shortener.test/x7Gq2</code>. Es un <b>GET</b> a un path de un solo segmento: el código." },
+      { t:"La ruta comodín lo captura", d:"La ruta <code>{code}</code> (al <b>final</b> del archivo, limitada a letras y números) lo manda a <code>resolve()</code>." },
+      { t:"Se busca el código", d:"<code>firstOrFail()</code> busca la fila con ese código. Si <b>no existe</b>, Laravel responde un <b>404</b> automáticamente." },
+      { t:"Se redirige al destino", d:"<code>redirect()->away()</code> envía el navegador a la URL original con un <b>301</b> (movido permanentemente)." }
+    ]
+  };
+  let currentFlow = 'crear';
+  function renderFlow(){
+    const box = document.getElementById('stepslist'); box.innerHTML = '';
+    FLOWS[currentFlow].forEach(s => {
+      const el = document.createElement('div'); el.className = 'stepcard';
+      el.innerHTML = '<span class="n"></span><div><h3>'+s.t+'</h3><p>'+s.d+'</p></div>';
+      box.appendChild(el);
+    });
+  }
+  function selectFlow(f){
+    currentFlow = f;
+    document.getElementById('tab-crear').setAttribute('aria-pressed', f==='crear');
+    document.getElementById('tab-resolver').setAttribute('aria-pressed', f==='resolver');
+    renderFlow();
+  }
+
+  /* ================= SECCIÓN 3 — archivos (con código comentado) ================= */
+  const FILES = {
+    web: {
+      path:'routes/web.php',
+      role:'El mapa de URLs: conecta cada dirección con un método del controller.',
+      key:[
+        'Cada <code>Route::</code> dice «este método HTTP + esta ruta → este método».',
+        'La ruta comodín <code>{code}</code> va <b>al final</b> porque atrapa todo.'
+      ],
+      code:`<?php
+
+use App\\Http\\Controllers\\LinkController;
+use Illuminate\\Support\\Facades\\Route;
+
+// GET /  ->  muestra el formulario para crear un link.
+// name() es un apodo para generar la URL sin escribirla a mano.
+Route::get('/', [LinkController::class, 'create'])
+    ->name('links.create');
+
+// POST /links  ->  recibe el formulario y crea el link.
+Route::post('/links', [LinkController::class, 'store'])
+    ->name('links.store');
+
+// GET /{code}  ->  resuelve un codigo y redirige al destino.
+// {code} es un comodin: captura cualquier path de un segmento.
+// VA AL FINAL: si estuviera antes, atraparia tambien /links.
+// where() lo limita a letras y numeros.
+Route::get('/{code}', [LinkController::class, 'resolve'])
+    ->where('code', '[A-Za-z0-9]+')
+    ->name('links.resolve');`
+    },
+    controller: {
+      path:'app/Http/Controllers/LinkController.php',
+      role:'El director de orquesta: no hace el trabajo pesado, lo reparte.',
+      key:[
+        'El constructor pide la <b>interfaz</b>; Laravel inyecta la implementación.',
+        '<code>store()</code> solo corre si la validación pasó; <code>resolve()</code> es el método que crecerá.'
+      ],
+      code:`<?php
+
+namespace App\\Http\\Controllers;
+
+use App\\Http\\Requests\\StoreLinkRequest;
+use App\\Models\\Link;
+use App\\Services\\CodeGenerator\\CodeGenerator;
+use Illuminate\\Http\\RedirectResponse;
+use Illuminate\\View\\View;
+
+class LinkController extends Controller
+{
+    // Laravel ve que pedimos un CodeGenerator (interfaz) y, gracias al
+    // binding del AppServiceProvider, inyecta un RandomCodeGenerator.
+    // El controller NO sabe cual implementacion recibe.
+    public function __construct(
+        private readonly CodeGenerator $codeGenerator,
+    ) {}
+
+    // GET /  ->  devuelve la vista del formulario. No toca la base.
+    public function create(): View
+    {
+        return view('links.create');
+    }
+
+    // POST /links  ->  corre SOLO si StoreLinkRequest ya valido la URL.
+    public function store(StoreLinkRequest $request): RedirectResponse
+    {
+        // 1) pide un codigo unico   2) inserta la fila en 'links'
+        $link = Link::create([
+            'code' => $this->codeGenerator->generate(),
+            'destination' => $request->validated('destination'),
+        ]);
+
+        // Vuelve al formulario con el link corto en la sesion (flash):
+        // datos de un solo uso que la vista leera para mostrarlos.
+        return redirect()
+            ->route('links.create')
+            ->with('shortUrl', url('/' . $link->code))
+            ->with('destination', $link->destination);
+    }
+
+    // GET /{code}  ->  busca el codigo y redirige.
+    public function resolve(string $code): RedirectResponse
+    {
+        // Busca la fila; firstOrFail(): si no hay, lanza un 404 limpio.
+        $link = Link::where('code', $code)->firstOrFail();
+
+        // (Aqui entraran luego: expiracion, contrasena, conteo de clics...)
+
+        // away() redirige fuera del sitio. 301 = movido permanentemente.
+        return redirect()->away($link->destination, 301);
+    }
+}`
+    },
+    request: {
+      path:'app/Http/Requests/StoreLinkRequest.php',
+      role:'El portero: valida la entrada ANTES de que el controller corra.',
+      key:[
+        'Si una regla falla, Laravel vuelve al formulario con el error solo.',
+        'Aquí añadiremos <code>SafeUrl</code> después (punto de cambio #2).'
+      ],
+      code:`<?php
+
+namespace App\\Http\\Requests;
+
+use Illuminate\\Foundation\\Http\\FormRequest;
+
+class StoreLinkRequest extends FormRequest
+{
+    // Puede esta persona hacer la peticion? Hoy es publico -> true.
+    // Si fuera false, Laravel responde 403 sin entrar al controller.
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    // Reglas que debe cumplir la entrada. Corren ANTES del controller.
+    public function rules(): array
+    {
+        return [
+            'destination' => [
+                'required',        // no puede venir vacio
+                'string',          // debe ser texto
+                'url:http,https',  // URL valida y solo http/https
+                'max:2048',        // limite sano de longitud
+            ],
+        ];
+    }
+
+    // Mensajes a medida (en espanol) por cada regla que falle.
+    public function messages(): array
+    {
+        return [
+            'destination.required' => 'Pega una URL para acortar.',
+            'destination.url' => 'Eso no parece una URL valida.',
+            'destination.max' => 'La URL es demasiado larga.',
+        ];
+    }
+}`
+    },
+    interface: {
+      path:'app/Services/CodeGenerator/CodeGenerator.php',
+      role:'El contrato: dice QUÉ existe (un generador), no CÓMO funciona.',
+      key:[
+        'Una <b>interfaz</b> es una promesa: «habrá un método <code>generate()</code>».',
+        'El resto del código depende de la promesa, no de una clase concreta.'
+      ],
+      code:`<?php
+
+namespace App\\Services\\CodeGenerator;
+
+// Una INTERFAZ es un contrato: define QUE se puede hacer, no COMO.
+// Cualquier clase que la "implemente" DEBE tener el metodo generate().
+interface CodeGenerator
+{
+    // Devuelve un codigo corto, unico, listo para la URL.
+    public function generate(): string;
+}`
+    },
+    random: {
+      path:'app/Services/CodeGenerator/RandomCodeGenerator.php',
+      role:'Una implementación del contrato: genera un código aleatorio único.',
+      key:[
+        'Alfabeto <b>sin</b> caracteres ambiguos (nada de 0/O, 1/l/I).',
+        '<code>random_int</code> es seguro; el <code>do..while</code> evita repetidos.'
+      ],
+      code:`<?php
+
+namespace App\\Services\\CodeGenerator;
+
+use App\\Models\\Link;
+
+class RandomCodeGenerator implements CodeGenerator // "cumplo el contrato"
+{
+    private const LENGTH = 6; // largo del codigo
+
+    // Genera un codigo y se asegura de que NO exista ya en la base.
+    public function generate(): string
+    {
+        do {
+            $code = $this->randomString(self::LENGTH); // candidato
+        } while (Link::where('code', $code)->exists());  // repite si existe
+
+        return $code; // garantizado unico
+    }
+
+    // Arma una cadena aleatoria del largo pedido.
+    private function randomString(int $length): string
+    {
+        // Alfabeto sin caracteres ambiguos (0/O, 1/l/I fuera).
+        $alphabet = '23456789abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ';
+        $max = strlen($alphabet) - 1;
+
+        $code = '';
+        for ($i = 0; $i < $length; $i++) {
+            // random_int es criptograficamente seguro (mejor que rand()).
+            $code .= $alphabet[random_int(0, $max)];
+        }
+
+        return $code;
+    }
+}`
+    },
+    model: {
+      path:'app/Models/Link.php',
+      role:'El modelo: la cara en PHP de la tabla links. Una fila = un objeto Link.',
+      key:[
+        'Extiende <code>Model</code>: gratis obtienes <code>create()</code>, <code>where()</code>...',
+        '<code>$fillable</code> es un escudo contra <b>mass assignment</b>.'
+      ],
+      code:`<?php
+
+namespace App\\Models;
+
+use Illuminate\\Database\\Eloquent\\Model;
+
+// Un modelo Eloquent = la representacion en PHP de la tabla "links".
+// Una fila de la tabla  <->  un objeto Link.
+class Link extends Model
+{
+    // $fillable = los unicos campos que se pueden llenar con create([...]).
+    // Escudo contra "mass assignment": si el formulario manda un campo
+    // extra (p. ej. is_admin), NO se guarda porque no esta en la lista.
+    protected $fillable = [
+        'code',
+        'destination',
+    ];
+}`
+    },
+    provider: {
+      path:'app/Providers/AppServiceProvider.php',
+      role:'El cableado: le dice a Laravel qué clase entregar por cada interfaz.',
+      key:[
+        'El <b>contenedor</b> es como una central: piden interfaz, entrega clase.',
+        'Esta es <b>la única línea</b> que cambia para migrar a Sqids.'
+      ],
+      code:`<?php
+
+namespace App\\Providers;
+
+use App\\Services\\CodeGenerator\\CodeGenerator;
+use App\\Services\\CodeGenerator\\RandomCodeGenerator;
+use Illuminate\\Support\\ServiceProvider;
+
+class AppServiceProvider extends ServiceProvider
+{
+    // register() corre al arrancar la app. Aqui "cableamos" el contenedor.
+    public function register(): void
+    {
+        // "Cuando alguien pida la interfaz CodeGenerator, entregale un
+        //  RandomCodeGenerator." Esta es LA linea que cambiaria para Sqids.
+        $this->app->bind(
+            CodeGenerator::class,
+            RandomCodeGenerator::class,
+        );
+    }
+
+    public function boot(): void
+    {
+        // (vacio por ahora)
+    }
+}`
+    },
+    migration: {
+      path:'database/migrations/2026_11_12_163239_create_links_table.php',
+      role:'La receta de la tabla: código versionado que crea/borra la tabla links.',
+      key:[
+        '<code>up()</code> crea la tabla; <code>down()</code> la deshace.',
+        '<code>code</code> es <code>unique()</code>: sin repetidos + búsqueda rápida.'
+      ],
+      code:`<?php
+
+use Illuminate\\Database\\Migrations\\Migration;
+use Illuminate\\Database\\Schema\\Blueprint;
+use Illuminate\\Support\\Facades\\Schema;
+
+// Una migracion = la estructura de la base como codigo versionado.
+return new class extends Migration
+{
+    // up() se ejecuta con "php artisan migrate": CREA la tabla.
+    public function up(): void
+    {
+        Schema::create('links', function (Blueprint $table) {
+            $table->id();                      // clave primaria autoincremental
+            $table->string('code')->unique();  // codigo unico + indice (busqueda rapida)
+            $table->text('destination');       // URL destino (text: puede ser larga)
+            $table->timestamps();              // created_at y updated_at automaticos
+            // Columnas futuras (expires_at, password_hash...) NO van aqui:
+            // entraran con su propia migracion cuando toque esa feature.
+        });
+    }
+
+    // down() DESHACE la migracion ("migrate:rollback"): borra la tabla.
+    public function down(): void
+    {
+        Schema::dropIfExists('links');
+    }
+};`
+    },
+    blade: {
+      path:'resources/views/links/create.blade.php',
+      role:'La vista: el HTML que ve el usuario (formulario + resultado).',
+      key:[
+        'Blade es HTML con atajos: <code>{{ }}</code> imprime de forma segura.',
+        '<code>@csrf</code>, <code>@error</code> y <code>@if</code> son directivas de Blade.'
+      ],
+      code:`{{-- Blade = HTML con atajos de Laravel. Unica pantalla de la app. --}}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    {{-- config('app.name') lee APP_NAME del .env -> "Cuturl". --}}
+    <title>{{ config('app.name') }} - acorta tus URLs</title>
+    {{-- (CSS omitido aqui por brevedad) --}}
+</head>
+<body>
+    <h1>{{ config('app.name') }}</h1>
+
+    {{-- Al enviar, hace POST a la ruta 'links.store' (= /links). --}}
+    <form method="POST" action="{{ route('links.store') }}">
+        @csrf  {{-- token anti-CSRF obligatorio en todo POST --}}
+        <input type="url" name="destination"
+               value="{{ old('destination') }}" required>
+        {{-- old() recuerda lo escrito si la validacion fallo --}}
+        <button type="submit">Acortar</button>
+    </form>
+
+    {{-- Muestra el error de StoreLinkRequest, si lo hay. --}}
+    @error('destination')
+        <p class="error">{{ $message }}</p>
+    @enderror
+
+    {{-- Tras crear, store() dejo 'shortUrl' en la sesion: lo mostramos. --}}
+    @if (session('shortUrl'))
+        <a href="{{ session('shortUrl') }}">{{ session('shortUrl') }}</a>
+    @endif
+</body>
+</html>`
+    }
+  };
+
+  // Qué etiqueta lleva cada archivo nuestro.
+  const BADGE = { model:'ours', controller:'ours', request:'ours', interface:'ours',
+    random:'ours', provider:'edit', web:'edit', blade:'ours', migration:'ours' };
+
+  // Visibilidad 1: árbol general. dir = encabezado de carpeta; id = archivo clicable; core = de fábrica.
+  const GENERAL = [
+    { dir:'app/', note:'tu código PHP' },
+    { id:'model' },
+    { core:'Models/User.php', note:'usuario, sin usar aún' },
+    { id:'controller' },
+    { id:'request' },
+    { id:'interface' },
+    { id:'random' },
+    { id:'provider' },
+    { dir:'routes/' },
+    { id:'web' },
+    { dir:'resources/views/links/' },
+    { id:'blade' },
+    { dir:'database/' },
+    { id:'migration' },
+    { core:'0001_… users · cache · jobs', note:'tablas base de Laravel' },
+    { core:'database.sqlite', note:'la base entera = 1 archivo' },
+    { dir:'public/' },
+    { core:'explicacion.html', badge:'ours', note:'¡esta misma página!' },
+    { root:true, core:'.env', badge:'edit', note:'APP_NAME=Cuturl, conexión SQLite' },
+    { info:'Las demás carpetas (config/, bootstrap/, storage/, vendor/, tests/) son de Laravel y no las tocamos.' }
+  ];
+
+  // Visibilidad 2 y 3: los archivos de cada flujo, en orden de ejecución.
+  const FLOW_FILES = {
+    crear: [
+      { id:'blade',      note:'1 · Envía el formulario' },
+      { id:'web',        note:'2 · La ruta POST /links' },
+      { id:'request',    note:'3 · Valida la URL' },
+      { id:'controller', note:'4 · store() orquesta' },
+      { id:'interface',  note:'5 · Contrato del generador' },
+      { id:'random',     note:'6 · Genera el código' },
+      { id:'model',      note:'7 · Guarda la fila' },
+      { id:'provider',   note:'· Apoyo: el cableado' },
+      { id:'migration',  note:'· Apoyo: define la tabla' }
+    ],
+    consultar: [
+      { id:'web',        note:'1 · La ruta /{code}' },
+      { id:'controller', note:'2 · resolve() busca y redirige' },
+      { id:'model',      note:'3 · Busca la fila por código' },
+      { id:'migration',  note:'· Apoyo: la tabla donde busca' }
+    ]
+  };
+
+  let currentView = 'general';
+  let currentFile = 'web';
+
+  function firstFileOf(view){
+    if (view === 'general') return GENERAL.find(r => r.id).id;
+    return FLOW_FILES[view][0].id;
+  }
+
+  function dot(type){ return '<span class="dot '+(type||'core')+'"></span>'; }
+  function splitPath(p){ const i = p.lastIndexOf('/'); return { dir: i>=0 ? p.slice(0,i+1) : '(raíz)', name: i>=0 ? p.slice(i+1) : p }; }
+
+  // Una fila de archivo clicable: punto de color + nombre, y la carpeta debajo (sin truncar).
+  function fileRow(id, step){
+    const f = FILES[id], sp = splitPath(f.path);
+    const btn = document.createElement('button');
+    btn.className = 'frow clk' + (id === currentFile ? ' sel' : '');
+    btn.setAttribute('role','tab'); btn.setAttribute('aria-selected', id === currentFile);
+    btn.title = f.path; // ruta completa al pasar el cursor
+    btn.innerHTML =
+      (step ? '<span class="fstep">'+step+'</span>' : '') +
+      '<span class="r1">'+dot(BADGE[id])+'<span class="fname">'+sp.name+'</span></span>' +
+      '<span class="fdir">'+sp.dir+'</span>';
+    btn.onclick = () => { currentFile = id; renderFileList(); renderCode(); };
+    return btn;
+  }
+
+  function renderFileList(){
+    const box = document.getElementById('filelist'); box.innerHTML = '';
+    if (currentView === 'general'){
+      let branch = null; // contenedor indentado (la "rama" del árbol)
+      GENERAL.forEach(e => {
+        if (e.info){
+          const d = document.createElement('div'); d.className = 'treeinfo';
+          d.textContent = e.info; box.appendChild(d); branch = null;
+        } else if (e.dir){
+          const h = document.createElement('div'); h.className = 'grp';
+          h.innerHTML = '<span class="gtri">▾</span>' + e.dir + (e.note ? ' <span class="gnote">— '+e.note+'</span>' : '');
+          box.appendChild(h);
+          branch = document.createElement('div'); branch.className = 'tree-branch';
+          box.appendChild(branch);
+        } else if (e.id){
+          (branch || box).appendChild(fileRow(e.id));
+        } else {
+          if (e.root) branch = null; // archivo en la raíz: no va indentado
+          const row = document.createElement('div'); row.className = 'frow core';
+          row.title = e.core + (e.note ? ' — ' + e.note : '');
+          row.innerHTML = '<span class="r1">'+dot(e.badge)+'<span class="fname">'+e.core+'</span></span>' +
+            (e.note ? '<span class="cnote">'+e.note+'</span>' : '');
+          (branch || box).appendChild(row);
+        }
+      });
+    } else {
+      FLOW_FILES[currentView].forEach(it => box.appendChild(fileRow(it.id, it.note)));
+    }
+  }
+
+  function renderCode(){
+    const f = FILES[currentFile];
+    const cp = document.getElementById('cp-path'); cp.textContent = f.path; cp.title = f.path;
+    document.getElementById('cp-role').textContent = f.role;
+    document.getElementById('cp-key').innerHTML = (f.key || []).map(k => '<li>'+k+'</li>').join('');
+    document.getElementById('cp-code').innerHTML = highlight(f.code);
+  }
+
+  function selectView(view){
+    currentView = view;
+    currentFile = firstFileOf(view);
+    ['general','crear','consultar'].forEach(v =>
+      document.getElementById('v-'+v).setAttribute('aria-pressed', v === view));
+    renderFileList(); renderCode();
+  }
+
+  /* ================= Índice: resaltado activo al hacer scroll ================= */
+  function initToc(){
+    const links = Array.from(document.querySelectorAll('.toc a[href^="#s"]'));
+    const byId = {};
+    links.forEach(a => { const id = a.getAttribute('href').slice(1); (byId[id] = byId[id] || []).push(a); });
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(en => {
+        if (en.isIntersecting){
+          links.forEach(a => a.classList.remove('active'));
+          (byId[en.target.id] || []).forEach(a => a.classList.add('active'));
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px' });
+    ['s1','s2','s3','s4'].forEach(id => { const el = document.getElementById(id); if (el) obs.observe(el); });
+  }
+
+  /* init */
+  selectFlow('crear');
+  selectView('general');
+  initToc();
+</script>
+
+</body>
+</html>
