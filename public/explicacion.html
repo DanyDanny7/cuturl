@@ -48,9 +48,13 @@
   .sbrand { display: inline-flex; align-items: center; gap: 11px; text-decoration: none; }
   .sbrand img { height: 28px; width: auto; display: block; }
   .sbrand .sbn { font-weight: 700; letter-spacing: .14em; text-transform: uppercase; font-size: .85rem; color: var(--accent); }
-  .sback { text-decoration: none; color: var(--muted); font-size: .85rem; font-weight: 600;
-    border: 1px solid var(--border); border-radius: 999px; padding: 7px 15px; transition: border-color .15s, color .15s; }
-  .sback:hover { color: var(--fg); border-color: var(--accent); }
+  .sback { text-decoration: none; color: var(--accent-ink); background: var(--accent); font-size: .85rem; font-weight: 700;
+    border: 1px solid var(--accent); border-radius: 999px; padding: 8px 17px; display: inline-flex; align-items: center; gap: 7px;
+    box-shadow: 0 6px 20px rgba(94,200,214,.25); transition: filter .15s, transform .05s; }
+  .sback:hover { filter: brightness(1.08); }
+  .sback:active { transform: translateY(1px); }
+  .sback .ar { transition: transform .15s; }
+  .sback:hover .ar { transform: translateX(3px); }
   footer.site { border-bottom: 0; border-top: 1px solid var(--border); margin-top: 8px; }
   footer.site .site-in { padding-block: 24px 42px; color: var(--muted); font-size: .86rem; flex-wrap: wrap; }
   footer.site .fl { display: inline-flex; align-items: center; gap: 10px; }
@@ -205,7 +209,7 @@
 <header class="site">
   <div class="site-in">
     <a class="sbrand" href="/"><img src="logo.png" alt=""><span class="sbn">Cuturl</span></a>
-    <a class="sback" href="/">← Volver a la app</a>
+    <a class="sback" href="/">Cortar una URL <span class="ar">→</span></a>
   </div>
 </header>
 
