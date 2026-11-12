@@ -159,6 +159,28 @@
         .docs-btn:active { transform: translateY(1px); }
         .docs-btn .ar { transition: transform .15s; } .docs-btn:hover .ar { transform: translateX(3px); }
 
+        /* CTA del código */
+        .code-cta { margin: 14px 0 10px; background: var(--surface-2, #1a2130);
+            border: 1px solid var(--border); border-radius: 18px; padding: 22px 24px;
+            display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+        .code-cta .txt { flex: 1 1 240px; min-width: 0; }
+        .code-cta h2 { margin: 0; font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em; display: inline-flex; align-items: center; gap: 9px; }
+        .code-cta h2 svg { width: 20px; height: 20px; }
+        .code-cta p { margin: 6px 0 0; color: var(--muted); font-size: .92rem; }
+        .code-btn { text-decoration: none; white-space: nowrap; font-weight: 700; font-size: .98rem;
+            color: var(--fg); background: rgba(255,255,255,.04); border: 1px solid var(--border); border-radius: 12px; padding: 13px 22px;
+            display: inline-flex; align-items: center; gap: 10px; transition: transform .05s, border-color .15s, background .15s; }
+        .code-btn svg { width: 18px; height: 18px; }
+        .code-btn:hover { border-color: var(--accent); background: rgba(94,200,214,.08); }
+        .code-btn:active { transform: translateY(1px); }
+
+        /* Píldora de código en el footer (igual que el header) */
+        .f-gh { display: inline-flex; align-items: center; gap: 7px; text-decoration: none;
+            color: var(--fg); border: 1px solid var(--border); border-radius: 999px; padding: 6px 13px;
+            font-weight: 600; transition: border-color .15s, background .15s, color .15s; }
+        .f-gh svg { width: 15px; height: 15px; }
+        .f-gh:hover { border-color: var(--accent); background: rgba(94,200,214,.07); color: var(--accent); }
+
         /* Footer */
         footer { margin-top: 56px; border-top: 1px solid var(--border); padding: 26px 0 40px; }
         footer .wrap { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
@@ -230,6 +252,18 @@
                 </div>
                 <a class="docs-btn" href="/explicacion.html">Ver la documentación <span class="ar">→</span></a>
             </div>
+
+            {{-- CTA al código fuente --}}
+            <div class="code-cta">
+                <div class="txt">
+                    <h2><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>Código abierto</h2>
+                    <p>Todo el proyecto está disponible en GitHub. Explóralo, clónalo o úsalo de referencia.</p>
+                </div>
+                <a class="code-btn" href="https://github.com/DanyDanny7/cuturl" target="_blank" rel="noopener">
+                    <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+                    Ver el código en GitHub
+                </a>
+            </div>
         </section>
     </main>
 
@@ -238,8 +272,10 @@
             <span class="f-made"><img class="logo-sm" src="{{ asset('logo.png') }}" alt="">Hecho por <a href="https://danypro.net" target="_blank" rel="noopener">Daniel Bonilla · danypro.net</a></span>
             <nav class="f-links">
                 <a href="/explicacion.html">Documentación</a>
-                {{-- TODO: al desplegar en GitHub, reemplazar por la URL real del repositorio. --}}
-                <a href="https://github.com/DanyDanny7/cuturl" target="_blank" rel="noopener">Código</a>
+                <a class="f-gh" href="https://github.com/DanyDanny7/cuturl" target="_blank" rel="noopener">
+                    <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+                    Código
+                </a>
             </nav>
         </div>
     </footer>
