@@ -8,10 +8,10 @@
     <meta name="theme-color" content="#0a0e14">
 
     {{-- Favicons / PWA (generados desde el logo danypro) --}}
-    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
-    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
-    <link rel="icon" href="{{ asset('favicon-96x96.png') }}" type="image/png" sizes="96x96">
-    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}" sizes="180x180">
+    <link rel="icon" href="{{ asset('favicon.ico') }}?v=2" sizes="any">
+    <link rel="icon" href="{{ asset('favicon.svg') }}?v=2" type="image/svg+xml">
+    <link rel="icon" href="{{ asset('favicon-96x96.png') }}?v=2" type="image/png" sizes="96x96">
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}?v=2" sizes="180x180">
     <link rel="manifest" href="{{ asset('site.webmanifest') }}">
 
     {{-- APP_NAME = "Cuturl" (vive en .env, un solo lugar). --}}
