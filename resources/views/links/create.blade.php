@@ -226,7 +226,7 @@
             <nav class="f-links">
                 <a href="/explicacion.html">Documentación</a>
                 {{-- TODO: al desplegar en GitHub, reemplazar por la URL real del repositorio. --}}
-                <a href="https://github.com/DanyDanny7" target="_blank" rel="noopener">Código</a>
+                <a href="https://github.com/DanyDanny7/cuturl" target="_blank" rel="noopener">Código</a>
             </nav>
         </div>
     </footer>
